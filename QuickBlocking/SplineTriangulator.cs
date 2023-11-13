@@ -9,6 +9,7 @@ using Cinemachine;
 public class SplineTriangulator : MonoBehaviour
 {
     public float extrusionHeight = 1.0f; // Adjust the extrusion height as needed
+    public Material meshMaterial; // Material for the MeshRenderer
 
     private MeshFilter meshFilter;
     private MeshRenderer meshRenderer;
@@ -17,24 +18,49 @@ public class SplineTriangulator : MonoBehaviour
     [ContextMenu("Update Mesh")]
     public void UpdateMeshButton()
     {
-        // Remove existing mesh colliders
-        RemoveMeshColliders();
+        // Remove existing MeshCollider
+        RemoveComponent<MeshCollider>();
 
+        // Check if MeshFilter and MeshRenderer exist, if not, add them
+        if (GetComponent<MeshFilter>() == null)
+        {
+            meshFilter = gameObject.AddComponent<MeshFilter>();
+        }
+        else
+        {
+            meshFilter = GetComponent<MeshFilter>();
+        }
+
+        if (GetComponent<MeshRenderer>() == null)
+        {
+            meshRenderer = gameObject.AddComponent<MeshRenderer>();
+        }
+        else
+        {
+            meshRenderer = GetComponent<MeshRenderer>();
+        }
+
+        // Assign the material to the MeshRenderer
+        if (meshMaterial != null)
+        {
+            meshRenderer.sharedMaterial = meshMaterial;
+        }
+
+        // Triangulate and add new MeshCollider
         CinemachineSmoothPath spline = GetComponent<CinemachineSmoothPath>();
         if (spline != null)
         {
             TriangulateSpline(spline);
-            // Add a new mesh collider
             AddMeshCollider();
         }
     }
 
-    private void RemoveMeshColliders()
+    private void RemoveComponent<T>() where T : Component
     {
-        MeshCollider[] meshColliders = GetComponents<MeshCollider>();
-        foreach (MeshCollider collider in meshColliders)
+        T component = GetComponent<T>();
+        if (component != null)
         {
-            DestroyImmediate(collider);
+            DestroyImmediate(component);
         }
     }
 
@@ -60,26 +86,17 @@ public class SplineTriangulator : MonoBehaviour
 
         CinemachineSmoothPath.Waypoint[] waypoints = spline.m_Waypoints;
         List<Vector3> vertices = new List<Vector3>();
-        List<Color32> colors = new List<Color32>();
 
         foreach (CinemachineSmoothPath.Waypoint waypoint in waypoints)
         {
             // Use the waypoint position as a vertex
             vertices.Add(waypoint.position);
             vertices.Add(new Vector3(waypoint.position.x, waypoint.position.y + extrusionHeight, waypoint.position.z));
-
-            // Assign colors based on vertex position
-            Color32 topColor = new Color32(255, 255, 255, 255); // White
-            Color32 bottomColor = new Color32(128, 128, 128, 255); // Gray
-            colors.Add(topColor);
-            colors.Add(bottomColor);
         }
 
         // Connect first and last points
         vertices.Add(vertices[0]);
         vertices.Add(vertices[1]);
-        colors.Add(new Color32(255, 255, 255, 255)); // White
-        colors.Add(new Color32(128, 128, 128, 255)); // Gray
 
         // Triangulate the vertices
         int[] triangles = Triangulate(vertices);
@@ -88,7 +105,9 @@ public class SplineTriangulator : MonoBehaviour
         Mesh mesh = new Mesh();
         mesh.vertices = vertices.ToArray();
         mesh.triangles = triangles;
-        mesh.colors32 = colors.ToArray(); // Assign vertex colors
+
+        // Set vertex colors
+        SetVertexColors(mesh);
 
         // Assign the mesh to the MeshFilter
         meshFilter.sharedMesh = mesh;
@@ -144,15 +163,27 @@ public class SplineTriangulator : MonoBehaviour
             return existingMeshFilter;
         }
 
-        GameObject meshObject = new GameObject("SplineMesh");
-        meshObject.transform.SetParent(transform);
-
-        MeshFilter meshFilter = meshObject.AddComponent<MeshFilter>();
-        MeshRenderer meshRenderer = meshObject.AddComponent<MeshRenderer>();
+        meshFilter = gameObject.AddComponent<MeshFilter>();
+        meshRenderer = gameObject.AddComponent<MeshRenderer>();
 
         // Optional: Assign a material to the MeshRenderer
-        // meshRenderer.sharedMaterial = yourMaterial;
+        if (meshMaterial != null)
+        {
+            meshRenderer.sharedMaterial = meshMaterial;
+        }
 
         return meshFilter;
+    }
+
+    private void SetVertexColors(Mesh mesh)
+    {
+        Color32[] colors = new Color32[mesh.vertices.Length];
+        for (int i = 0; i < colors.Length; i++)
+        {
+            // Assign white color to the top vertices, and gray to the bottom vertices
+            colors[i] = i % 2 == 0 ? Color.white : Color.gray;
+        }
+
+        mesh.colors32 = colors;
     }
 }
