@@ -22,3 +22,5 @@ Some improvements I'm not so sure how to make yet are:
 - UVs for the side and top parts of the mesh.
 
 (feel free to contribute)
+
+Project is set up in Unity 2021.3.21f URP 12
