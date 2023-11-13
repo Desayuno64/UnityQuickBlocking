@@ -3,7 +3,7 @@
 
 ![alt text](https://raw.githubusercontent.com/Desayuno64/UnityQuickBlocking/main/QuickBlocking/Screenshots/ToolPreview.gif)
 
-This is a simple spline based blocking generator, it depends on the CinemachineSmoothPath or CinemachinePath,
+This is a simple spline based mesh blocking generator, it depends on the CinemachineSmoothPath or CinemachinePath,
 
 ![alt text](https://raw.githubusercontent.com/Desayuno64/UnityQuickBlocking/main/QuickBlocking/Screenshots/CinemachinePath.png)
 
