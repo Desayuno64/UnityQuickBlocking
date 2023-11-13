@@ -1,11 +1,11 @@
 
 # Quick Blocking Generator
 
-![alt text](https://raw.githubusercontent.com/Desayuno64/UnityQuickBlocking/main/QuickBlocking/Screenshots/ToolPreview.gif)
+![alt text](https://raw.githubusercontent.com/Desayuno64/UnityQuickBlocking/main/QuickBlocking/Assets/Screenshots/ToolPreview.gif)
 
 This is a simple spline based mesh blocking generator, it depends on the CinemachineSmoothPath or CinemachinePath,
 
-![alt text](https://raw.githubusercontent.com/Desayuno64/UnityQuickBlocking/main/QuickBlocking/Screenshots/CinemachinePath.png)
+![alt text](https://raw.githubusercontent.com/Desayuno64/UnityQuickBlocking/main/QuickBlocking/Assets/Screenshots/CinemachinePath.png)
 
 Currently it does not support smooth blocking, only point based which gives you a blocky but userfull result.
 
@@ -13,7 +13,7 @@ To use it, just create a path, and add the script to a gameobject
 
 Once you've created a path, update it through the "Update Mesh" in the three dots component, that will create the mesh and update the Mesh collider component ready to test.
 
-![alt text](https://raw.githubusercontent.com/Desayuno64/UnityQuickBlocking/main/QuickBlocking/Screenshots/HowToUpdate.gif)
+![alt text](https://raw.githubusercontent.com/Desayuno64/UnityQuickBlocking/main/QuickBlocking/Assets/Screenshots/HowToUpdate.gif)
 
 Some improvements I'm not so sure how to make yet are:
 
