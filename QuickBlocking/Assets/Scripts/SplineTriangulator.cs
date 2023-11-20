@@ -14,7 +14,6 @@ public class SplineTriangulator : MonoBehaviour
     private MeshFilter meshFilter;
     private MeshRenderer meshRenderer;
 
-#if UNITY_EDITOR
     [ContextMenu("Update Mesh")]
     public void UpdateMeshButton()
     {
@@ -69,7 +68,6 @@ public class SplineTriangulator : MonoBehaviour
         MeshCollider meshCollider = gameObject.AddComponent<MeshCollider>();
         meshCollider.sharedMesh = meshFilter.sharedMesh;
     }
-#endif
 
     private void TriangulateSpline(CinemachineSmoothPath spline)
     {
