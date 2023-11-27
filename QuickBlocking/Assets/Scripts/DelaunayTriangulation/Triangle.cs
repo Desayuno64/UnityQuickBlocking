@@ -1,6 +1,4 @@
 ﻿using System;
-using Unity.Mathematics;
-using UnityEngine;
 
 namespace StarterAssets.DelaunayTriangulation
 {
@@ -42,5 +40,11 @@ namespace StarterAssets.DelaunayTriangulation
 
 		private float GetCircumradius() => 
 			(float)Math.Sqrt(Math.Pow(vertices[0].x - circumcentre.x, 2) + Math.Pow(vertices[0].y - circumcentre.y, 2));
+
+		public bool IsVertexInsideCircumcircle(V2 vertex)
+		{
+			float distance = V2.Distance(vertex, circumcentre);
+			return distance < circumradius;
+		}
 	}
 }

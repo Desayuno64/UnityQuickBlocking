@@ -38,9 +38,11 @@ namespace StarterAssets.DelaunayTriangulation
 		public static bool operator ==(V2 a, V2 b) => 
 			Mathf.Abs(a.x - b.x) < TOLERANCE && Math.Abs(a.y - b.y) < TOLERANCE;
 		public static bool operator !=(V2 a, V2 b) => !(a == b);
-
 		private bool Equals(V2 other) => x.Equals(other.x) && y.Equals(other.y);
 		public override bool Equals(object obj) => obj is V2 other && Equals(other);
 		public override int GetHashCode() => HashCode.Combine(x, y);
+
+		public static float Distance(V2 left, V2 right) => 
+			(float)Math.Sqrt(Math.Pow(left.x - right.x, 2) + Math.Pow(left.y - right.y, 2));
 	}
 }
