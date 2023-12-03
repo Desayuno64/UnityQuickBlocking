@@ -1,20 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace StarterAssets.DelaunayTriangulation
 {
 	public class Triangulation
 	{
-		private readonly V2[] points;
-		public readonly List<Triangle> triangulation;
-		private V2[] sortedPoints;
-		private List<Triangle> badTriangles;
+		private readonly Point[] points;
+		public List<Triangle> triangulation;
 		public Triangle superTriangle;
-		
-		public Triangulation(V2[] points)
+		private readonly TriangleComponent trianglePrefab;
+
+		public Triangulation(Point[] points, TriangleComponent trianglePrefab)
 		{
-			badTriangles = new();
+			this.trianglePrefab = trianglePrefab;
 			triangulation = new();
 			this.points = points;
 		}
@@ -22,111 +23,116 @@ namespace StarterAssets.DelaunayTriangulation
 		public void Calculate()
 		{
 			superTriangle = CreateSuperTriangle();
-			badTriangles.Add(superTriangle);
-
-			List<Triangle> tempTriangles = new();
-			for (int i = 0; i < sortedPoints.Length; i++)
+			triangulation.Add(superTriangle);
+			for (int i = 0; i < points.Length; i++)
 			{
-				V2 vertex = sortedPoints[i];
-				if (i == 0)
+				List<Triangle> badTriangles = new();
+				List<Edge> polygon = new();
+				Point point = points[i];
+				
+				for (int j = 0; j < triangulation.Count; j++)
 				{
-					tempTriangles.AddRange(CreateNewTriangles(vertex, superTriangle));
-					continue;
+					Triangle triangle = triangulation[j];
+					if (triangle.IsVertexInsideCircumcircle(point))
+						badTriangles.Add(triangle);
 				}
 
-				int length = tempTriangles.Count;
-				for (int j = 0; j < length; j++)
+				if (badTriangles.Count == 1)
 				{
-					if (!tempTriangles[j].IsVertexInsideCircumcircle(vertex))
+					polygon.Add(badTriangles[0].edges[0]);
+					polygon.Add(badTriangles[0].edges[1]);
+					polygon.Add(badTriangles[0].edges[2]);
+					Debug.Log($"ADD ONLY BAD {i}");
+				}
+				else
+				{
+					for (int j = 0; j < badTriangles.Count; j++)
 					{
-						Triangle triangle = tempTriangles[j];
-						tempTriangles.Remove(triangle);
-						tempTriangles.TrimExcess();
-						badTriangles.Add(triangle);
+						Triangle triangle = badTriangles[j];
+						for (int k = 0; k < badTriangles.Count; k++)
+						{
+							if (k == j)
+								continue;
+
+
+							bool equal1 = triangle.edges[0] == badTriangles[k].edges[0]
+										  || triangle.edges[0] == badTriangles[k].edges[1]
+										  || triangle.edges[0] == badTriangles[k].edges[2];
+							if(equal1)
+								polygon.Add(triangle.edges[0]);
+								
+							equal1 = triangle.edges[1] == badTriangles[k].edges[0]
+										  || triangle.edges[1] == badTriangles[k].edges[1]
+										  || triangle.edges[1] == badTriangles[k].edges[2];
+							if(equal1)
+								polygon.Add(triangle.edges[1]);
+						
+							equal1 = triangle.edges[2] == badTriangles[k].edges[0]
+										  || triangle.edges[2] == badTriangles[k].edges[1]
+										  || triangle.edges[2] == badTriangles[k].edges[2];
+							if(equal1)
+								polygon.Add(triangle.edges[2]);
+							
+						}
 					}
-					tempTriangles.AddRange(CreateNewTriangles(vertex, tempTriangles[j]));
+				}
+				
+				for (int j = 0; j < triangulation.Count; j++)
+				{
+					if (badTriangles.Any(t => t == triangulation[j]))
+						triangulation[j] = null;
+				}
+				triangulation = triangulation.Where(triangle => triangle != null).ToList();
+
+				polygon = polygon.Distinct().ToList();
+				for (int j = 0; j < polygon.Count; j++)
+				{
+					Triangle result = CreateFromEdgePoint(polygon[j], point);
+					triangulation.Add(result);
+					Debug.Log($"ADD FROM POLYGON {i}");
 				}
 			}
-			triangulation.AddRange(tempTriangles);
-			RemoveTrianglesFromSuperTriangle();
-		}
 
-		private void RemoveTrianglesFromSuperTriangle()
-		{
-			List<int> indexesToRemove = new();
-			V2 v1 = superTriangle.vertices[0];
-			V2 v2 = superTriangle.vertices[1];
-			V2 v3 = superTriangle.vertices[2];
-			
 			for (int i = 0; i < triangulation.Count; i++)
 			{
-				int count = 0;
-				for (int j = 0; j < 3; j++)
-				{
-					if (triangulation[i].vertices[j] == v1 ||
-					    triangulation[i].vertices[j] == v2 ||
-					    triangulation[i].vertices[j] == v3)
-						count++;
-				}			
-				
-				if(count >= 2)
-					indexesToRemove.Add(i);
+				Triangle triangle = triangulation[i];
+				int amount = superTriangle.ContainsPoint(triangle);
+				if(amount > 1)
+					triangulation[i] = null;
 			}
-			
-			for(int i = 0; i < indexesToRemove.Count; i++)
-				triangulation.RemoveAt(indexesToRemove[i]);
-			
-			triangulation.TrimExcess();
-		}
-		private Triangle[] CreateNewTriangles(V2 vertex, Triangle triangle)
-		{
-			Triangle[] result =
-			{
-				new(new[]
-				{
-					vertex, triangle.vertices[0], triangle.vertices[1]
-				}, new Edge[]
-				{
-					new(vertex, triangle.vertices[0]),
-					new(vertex, triangle.vertices[1]),
-					new(triangle.vertices[0], triangle.vertices[1])
-				}),
-				new(new[]
-				{
-					vertex, triangle.vertices[1], triangle.vertices[2]
-				}, new Edge[]
-				{
-					new(vertex, triangle.vertices[1]),
-					new(vertex, triangle.vertices[2]),
-					new(triangle.vertices[1], triangle.vertices[2])
-				}),
-				new(new[]
-				{
-					vertex, triangle.vertices[2], triangle.vertices[0]
-				}, new Edge[]
-				{
-					new(vertex, triangle.vertices[2]),
-					new(vertex, triangle.vertices[0]),
-					new(triangle.vertices[2], triangle.vertices[0])
-				})
-			};
 
-			return result;
+			triangulation = triangulation.Where(triangle => triangle != null).ToList();
+			Debug.Log($"AMOUNT {triangulation.Count}");
+			triangulation.Add(superTriangle);
+			for (int i = 0; i < triangulation.Count; i++)
+			{
+				var component = Object.Instantiate(trianglePrefab);
+				component.SetData(triangulation[i].edges, triangulation[i].circumcentre, triangulation[i].circumradius);
+			}
 		}
+
+		private Triangle CreateFromEdgePoint(Edge edge, Point point) =>
+			new(new[]
+				{
+					edge.vertex1, edge.vertex2, point
+				},
+				new[]
+				{
+					edge, new(edge.vertex1, point), new(edge.vertex2, point)
+				});
 
 		public Triangle CreateSuperTriangle()
 		{
-			V2[] sortedPointsHorizontal = points.OrderBy(point => point.x).ToArray();
-			V2[] sortedPointsVertical = points.OrderBy(point => point.x).ToArray();
-			sortedPoints = sortedPointsHorizontal;
+			Point[] sortedPointsHorizontal = points.OrderBy(point => point.x).ToArray();
+			Point[] sortedPointsVertical = points.OrderBy(point => point.x).ToArray();
 			float xDistance = sortedPointsHorizontal.Last().x - sortedPointsHorizontal.First().x;
 			float yDistance = sortedPointsVertical.Last().y - sortedPointsVertical.First().y;
 			float length = Math.Max(xDistance, yDistance);
 			length *= 4;
 			float halfLength = length / 2;
-			V2 center = V2.Average(points);
+			Point center = Point.Average(points);
 
-			V2[] resultVertex =
+			Point[] resultVertex =
 			{
 				new(center.x + halfLength, center.y - halfLength),
 				new(center.x, center.y + halfLength),

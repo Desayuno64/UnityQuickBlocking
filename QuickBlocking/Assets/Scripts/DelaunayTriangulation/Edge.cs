@@ -4,10 +4,10 @@ namespace StarterAssets.DelaunayTriangulation
 {
 	public readonly struct Edge
 	{
-		public readonly V2 vertex1;
-		public readonly V2 vertex2;
+		public readonly Point vertex1;
+		public readonly Point vertex2;
 
-		public Edge(V2 vertex1, V2 vertex2)
+		public Edge(Point vertex1, Point vertex2)
 		{
 			this.vertex1 = vertex1;
 			this.vertex2 = vertex2;
