@@ -42,8 +42,14 @@ namespace StarterAssets.DelaunayTriangulation
 		public override bool Equals(object obj) => obj is Point other && Equals(other);
 		public override int GetHashCode() => HashCode.Combine(x, y);
 
-		public static float Distance(Point left, Point right) => 
-			(float)Math.Sqrt(Math.Pow(left.x - right.x, 2) + Math.Pow(left.y - right.y, 2));
+		public static float Distance(Point left, Point right)
+		{
+			float numb1 = left.x - right.x;
+			float numb2 = left.y - right.y;
+
+			return (float)Math.Sqrt((double)numb1 * (double)numb1 + (double)numb2 * (double)numb2);
+			//return (float)Math.Sqrt(Math.Pow(left.x - right.x, 2) + Math.Pow(left.y - right.y, 2));
+		}
 
 		public override string ToString() => $"{x}, {y}";
 	}

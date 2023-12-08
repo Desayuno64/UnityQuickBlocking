@@ -76,6 +76,7 @@ namespace StarterAssets.DelaunayTriangulation
 			return result;
 		}
 
+
 		private float GetCircumradius() => 
 			(float)Math.Sqrt(Math.Pow(vertices[0].x - circumcentre.x, 2) + Math.Pow(vertices[0].y - circumcentre.y, 2));
 
